@@ -4,19 +4,26 @@ function deleteCard(cardElement) {
     cardElement.remove();
 }
 
-function showCards(cardName, cardImageLink) {
+function createCard(item, {deleteCard}) {
     const cardTemplate = document.querySelector('#card-template').content;
     const cardElement = cardTemplate.querySelector('.card').cloneNode(true);
     const cardDeleteButton = cardElement.querySelector('.card__delete-button');
+    const cardTitle = cardElement.querySelector('.card__title');
+    const cardImage = cardElement.querySelector('.card__image');
   
-    cardElement.querySelector('.card__title').textContent = cardName;
-    cardElement.querySelector('.card__image').setAttribute('src', cardImageLink);
+    cardTitle.textContent = item.name;
+    cardImage.src = item.link;
+    cardImage.alt = item.name;
+
     cardDeleteButton.addEventListener('click', () => deleteCard(cardElement));
 
-    cardContainer.append(cardElement);
+    return cardElement;
 }
 
-initialCards.forEach(element => {
-    showCards(element.name, element.link);
-});
+function showCards(cardArray) {
+    cardArray.forEach(item => {
+        cardContainer.append(createCard(item, { deleteCard }));
+    });
+}
 
+showCards(initialCards);
