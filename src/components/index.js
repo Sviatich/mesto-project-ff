@@ -49,12 +49,6 @@ allPopups.forEach(popup => {
     });
 });
 
-document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-        closeAllPopups();
-    }
-});
-
 document.forms['new-place'].addEventListener('submit', function (evt) {
     evt.preventDefault();
     const placeName = document.querySelector('[name="place-name"]').value;
