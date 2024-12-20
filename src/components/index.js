@@ -32,13 +32,58 @@ const validationConfig = {
     errorClass: 'popup__error_visible'
 };
 
-function changeButtonTitleOnSave(button) {
-    button.textContent = "Сохранение...";
-}
+closeButtons.forEach(button => {
+    button.addEventListener('click', closeAllPopups);
+});
 
-function changeButtonTitleAfterSave(button) {
-    button.textContent = "Сохранить";
-}
+allPopups.forEach(popup => {
+    popup.addEventListener('mousedown', (event) => {
+        if (event.target === popup) {
+            closeAllPopups();
+        }
+    });
+});
+
+addNewCardForm.addEventListener('submit', async function (evt) {
+    evt.preventDefault();
+    changeButtonTitle(addNewCardForm.querySelector('.button'), "Сохранение...");
+    const placeName = document.querySelector('[name="place-name"]').value;
+    const link = document.querySelector('[name="link"]').value;
+    await addNewCard(placeName, link);
+    renderData();
+    addNewCardForm.reset();
+    changeButtonTitle(addNewCardForm.querySelector('.button'), "Сохранить");
+    closeAllPopups();
+});
+
+editProfileAvatarForm.addEventListener('submit', async function (evt) {
+    evt.preventDefault();
+    changeButtonTitle(editProfileAvatarForm.querySelector('.button'), "Сохранение...");
+    const link = document.querySelector('[name="avatar-link"]').value;
+    editProfileAvatarForm.reset();
+    await updateProfileAvatar(link);
+    userUpdateData();
+    changeButtonTitle(editProfileAvatarForm.querySelector('.button'), "Сохранить");
+    closeAllPopups();
+});
+
+editProfileForm.addEventListener('submit', async function (evt) {
+    evt.preventDefault();
+    changeButtonTitle(editProfileForm.querySelector('.button'), "Сохранение...");
+    const inputName = document.querySelector('[name="name"]');
+    const inputDescription = document.querySelector('[name="description"]');
+    let currentName = document.querySelector('.profile__title');
+    let currentDescription = document.querySelector('.profile__description');
+    currentName.textContent = inputName.value;
+    currentDescription.textContent = inputDescription.value;
+    await userUpdateData();
+    changeButtonTitle(editProfileForm.querySelector('.button'), "Сохранить");
+    closeAllPopups();
+});
+
+editAvatarButton.addEventListener('click', () => {
+    openModal(updateAvatarPopup);
+});
 
 editProfileButton.addEventListener('click', () => {
     openModal(editProfilePopup);
@@ -56,6 +101,10 @@ addCardButton.addEventListener('click', () => {
     enableValidation(validationConfig);
 });
 
+function changeButtonTitle(button, text) {
+    button.textContent = text;
+}
+
 function imageClick(imageLink, imageCaption) {
     imagePopapPicture.src = imageLink;
     imagePopapPicture.alt = imageCaption;
@@ -68,15 +117,13 @@ function deleteCard(cardId) {
     const form = document.forms['delete-card'];
     form.onsubmit = async function (evt) {
         evt.preventDefault();
+        changeButtonTitle(form.querySelector('.button'), "Сохранение...");
         await deleteMyCard(cardId);
         renderData();
+        changeButtonTitle(form.querySelector('.button'), "Да");
         closeModal(deleteCardPopup);
     };
 }
-
-editAvatarButton.addEventListener('click', () => {
-    openModal(updateAvatarPopup);
-});
 
 async function likeCard(item) {
     const userData = await getUserData();
@@ -95,55 +142,6 @@ function closeAllPopups() {
         clearValidation(openedPopup, validationConfig);
     }
 }
-
-closeButtons.forEach(button => {
-    button.addEventListener('click', closeAllPopups);
-});
-
-allPopups.forEach(popup => {
-    popup.addEventListener('mousedown', (event) => {
-        if (event.target === popup) {
-            closeAllPopups();
-        }
-    });
-});
-
-addNewCardForm.addEventListener('submit', async function (evt) {
-    evt.preventDefault();
-    changeButtonTitleOnSave(addNewCardForm.querySelector('.button'));
-    const placeName = document.querySelector('[name="place-name"]').value;
-    const link = document.querySelector('[name="link"]').value;
-    await addNewCard(placeName, link);
-    renderData();
-    addNewCardForm.reset();
-    closeAllPopups();
-    changeButtonTitleAfterSave(addNewCardForm.querySelector('.button'));
-});
-
-editProfileAvatarForm.addEventListener('submit', async function (evt) {
-    evt.preventDefault();
-    changeButtonTitleOnSave(editProfileAvatarForm.querySelector('.button'));
-    const link = document.querySelector('[name="avatar-link"]').value;
-    editProfileAvatarForm.reset();
-    await updateProfileAvatar(link);
-    userUpdateData();
-    closeAllPopups();
-    changeButtonTitleAfterSave(editProfileAvatarForm.querySelector('.button'));
-});
-
-editProfileForm.addEventListener('submit', async function (evt) {
-    evt.preventDefault();
-    changeButtonTitleOnSave(editProfileForm.querySelector('.button'));
-    const inputName = document.querySelector('[name="name"]');
-    const inputDescription = document.querySelector('[name="description"]');
-    let currentName = document.querySelector('.profile__title');
-    let currentDescription = document.querySelector('.profile__description');
-    currentName.textContent = inputName.value;
-    currentDescription.textContent = inputDescription.value;
-    await userUpdateData();
-    closeAllPopups();
-    changeButtonTitleAfterSave(editProfileForm.querySelector('.button'));
-});
 
 async function showCards(user) {
     const initialCards = await getInitialCards();
