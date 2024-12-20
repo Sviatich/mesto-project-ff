@@ -1,12 +1,13 @@
 import '../index.css';
-// import { initialCards } from './cards.js';
-import { deleteCard, createCard, likeCard } from './card.js';
+import { createCard } from './card.js';
 import { openModal, closeModal } from './modal.js';
 import { enableValidation, clearValidation } from './validation.js';
-import { getInitialCards, getUserData, updateUserData, addNewCard } from './api.js';
+import { getInitialCards, getUserData, updateUserData, addNewCard, deleteMyCard, setLike, unSetLike, updateProfileAvatar } from './api.js';
 
 const cardContainer = document.querySelector('.places__list');
 const editProfilePopup = document.querySelector('.popup_type_edit');
+const deleteCardPopup = document.querySelector('.popup_type_delete-card');
+const updateAvatarPopup = document.querySelector('.popup_type_edit-avatar');
 const newCardPopup = document.querySelector('.popup_type_new-card');
 const imagePopap = document.querySelector('.popup_type_image');
 const imagePopapPicture = imagePopap.querySelector('.popup__image');
@@ -22,6 +23,15 @@ const validationConfig = {
     errorClass: 'popup__error_visible'
 };
 
+function changeButtonTitleOnSave(button) {
+    console.log("Сохранение");
+    button.textContent = "Сохранение...";
+}
+
+function changeButtonTitleAfterSave(button) {
+    button.textContent = "Сохранить";
+}
+
 document.querySelector('.profile__edit-button').addEventListener('click', () => {
     openModal(editProfilePopup);
     const inputName = document.querySelector('[name="name"]');
@@ -32,6 +42,7 @@ document.querySelector('.profile__edit-button').addEventListener('click', () => 
     inputDescription.value = currentDescription;
     enableValidation(validationConfig);
 });
+
 document.querySelector('.profile__add-button').addEventListener('click', () => {
     openModal(newCardPopup);
     enableValidation(validationConfig);
@@ -42,6 +53,31 @@ function imageClick(imageLink, imageCaption) {
     imagePopapPicture.alt = imageCaption;
     imagePopapCaption.textContent = imageCaption;
     openModal(imagePopap);
+}
+
+async function deleteCard(cardId) {
+    openModal(deleteCardPopup);
+    document.forms['delete-card'].addEventListener('submit', async function (evt) {
+        evt.preventDefault();
+        await deleteMyCard(cardId);
+        userLoadData();
+        closeAllPopups();
+    });
+}
+
+document.querySelector('.profile__image').addEventListener('click', () => {
+    openModal(updateAvatarPopup);
+});
+
+async function likeCard(item) {
+    const userData = await getUserData();
+    if (item.likes.some(like => like._id === userData._id)) {
+        await unSetLike(item._id);
+        showCards();
+    } else {
+        await setLike(item._id);
+        showCards();
+    }
 }
 
 function closeAllPopups() {
@@ -64,23 +100,32 @@ allPopups.forEach(popup => {
     });
 });
 
-document.forms['new-place'].addEventListener('submit', function (evt) {
+document.forms['new-place'].addEventListener('submit', async function (evt) {
     evt.preventDefault();
+    changeButtonTitleOnSave(document.forms['new-place'].querySelector('.button'));
     const placeName = document.querySelector('[name="place-name"]').value;
     const link = document.querySelector('[name="link"]').value;
-    const data = {
-        name: placeName,
-        link: link,
-    };
-    cardContainer.prepend(createCard(data, { deleteCard, likeCard, imageClick }));
+    await addNewCard(placeName, link);
+    showCards();
     document.forms['new-place'].reset();
     closeAllPopups();
-    addNewCard(placeName, link);
-    
+    changeButtonTitleAfterSave(document.forms['new-place'].querySelector('.button'));
+});
+
+document.forms['edit-profile-avatar'].addEventListener('submit', async function (evt) {
+    evt.preventDefault();
+    changeButtonTitleOnSave(document.forms['edit-profile-avatar'].querySelector('.button'));
+    const link = document.querySelector('[name="avatar-link"]').value;
+    document.forms['edit-profile-avatar'].reset();
+    await updateProfileAvatar(link);
+    userUpdateData();
+    closeAllPopups();
+    changeButtonTitleAfterSave(document.forms['edit-profile-avatar'].querySelector('.button'));
 });
 
 document.forms['edit-profile'].addEventListener('submit', function (evt) {
     evt.preventDefault();
+    changeButtonTitleOnSave(document.forms['edit-profile'].querySelector('.button'));
     const inputName = document.querySelector('[name="name"]');
     const inputDescription = document.querySelector('[name="description"]');
     let currentName = document.querySelector('.profile__title');
@@ -89,29 +134,37 @@ document.forms['edit-profile'].addEventListener('submit', function (evt) {
     currentDescription.textContent = inputDescription.value;
     userUpdateData();
     closeAllPopups();
+    changeButtonTitleAfterSave(document.forms['edit-profile'].querySelector('.button'));
 });
 
-function showCards(user, cards) {
-    cards.forEach(item => {
-        cardContainer.append(createCard(user, item, { deleteCard, likeCard, imageClick }));
+async function showCards() {
+    const initialCards = await getInitialCards();
+    const userData = await getUserData();
+
+    const allCards = cardContainer.querySelectorAll('.places__item');
+    if (allCards != null) {
+        allCards.forEach(item => {
+            cardContainer.removeChild(item);
+        });
+    }
+
+    initialCards.forEach(item => {
+        cardContainer.append(createCard(userData, item, { deleteCard, likeCard, imageClick }));
     });
 }
 
-const initialCards = await getInitialCards();
-console.log(initialCards);
-// const userData = await getUserData();
-
-async function userLoadData(){
+async function userLoadData() {
     const userData = await getUserData();
     let currentName = document.querySelector('.profile__title');
     let currentDescription = document.querySelector('.profile__description');
     let currentAvatar = document.querySelector('.profile__image');
     currentName.textContent = userData.name;
     currentDescription.textContent = userData.about;
-    currentAvatar.src = userData.avatar;
+    currentAvatar.style.backgroundImage = `url("${userData.avatar}")`;
+    showCards();
 }
 
-function userUpdateData(){
+function userUpdateData() {
     let currentName = document.querySelector('.profile__title');
     let currentDescription = document.querySelector('.profile__description');
     let currentAvatar = document.querySelector('.profile__image');
@@ -120,4 +173,4 @@ function userUpdateData(){
 }
 
 userLoadData();
-showCards(initialCards);
+showCards();

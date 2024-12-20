@@ -15,7 +15,7 @@
         </header>
         <main class="content">
             <section class="profile page__section">
-                <div class="profile__image"></div>
+                <div class="profile__image"><span class="edit-icon"><img src="<%=require('./images/edit-avatar.png')%>"></span></div>
                 <div class="profile__info">
                     <h1 class="profile__title">Жак-Ив Кусто</h1>
                     <button class="profile__edit-button" type="button"></button>
@@ -55,6 +55,26 @@
                     <span class="place-name-error"></span>
                     <input type="url" name="link" class="popup__input popup__input_type_url" placeholder="Ссылка на картинку" required>
                     <span class="link-error"></span>
+                    <button type="submit" class="button popup__button">Сохранить</button>
+                </form>
+            </div>
+        </div>
+        <div class="popup popup_type_delete-card popup_is-animated">
+            <div class="popup__content">
+                <button type="button" class="popup__close"></button>
+                <h3 class="popup__title">Вы уверены?</h3>
+                <form class="popup__form" name="delete-card">
+                    <button type="submit" class="button popup__button">Да</button>
+                </form>
+            </div>
+        </div>
+        <div class="popup popup_type_edit-avatar popup_is-animated">
+            <div class="popup__content">
+                <button type="button" class="popup__close"></button>
+                <h3 class="popup__title">Обновить аватар</h3>
+                <form class="popup__form" name="edit-profile-avatar" novalidate>
+                    <input type="url" name="avatar-link" class="popup__input popup__input_type_url" placeholder="Ссылка на картинку" required>
+                    <span class="avatar-link-error"></span>
                     <button type="submit" class="button popup__button">Сохранить</button>
                 </form>
             </div>

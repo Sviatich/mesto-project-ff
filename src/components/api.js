@@ -58,16 +58,55 @@ export const addNewCard = async (cardName, cardLink) => {
     }
 };
 
-// export const deleteMyCard = async (cardId) => {
-//     try {
-//         const response = await fetch(`${config.baseUrl}/cards/${cardId}`, { method: 'DELETE', headers: config.headers });
-//         if (!response.ok) {
-//             throw new Error('Ошибка загрузки данных');
-//         }
-//         return await response.json();
-//     } catch (error) {
-//         console.error(error);
-//         return [];
-//     }
-// };
+export const deleteMyCard = async (cardId) => {
+    try {
+        const response = await fetch(`${config.baseUrl}/cards/${cardId}`, { method: 'DELETE', headers: config.headers });
+        if (!response.ok) {
+            throw new Error('Ошибка загрузки данных');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+};
+
+export const setLike = async (cardId) => {
+    try {
+        const response = await fetch(`${config.baseUrl}/cards/likes/${cardId}`, { method: 'PUT', headers: config.headers });
+        if (!response.ok) {
+            throw new Error('Ошибка загрузки данных');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+};
+
+export const unSetLike = async (cardId) => {
+    try {
+        const response = await fetch(`${config.baseUrl}/cards/likes/${cardId}`, { method: 'DELETE', headers: config.headers });
+        if (!response.ok) {
+            throw new Error('Ошибка загрузки данных');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+};
+
+export const updateProfileAvatar = async (avatarLink) => {
+    try {
+        const response = await fetch(`${config.baseUrl}/users/me/avatar`, { method: 'PATCH', headers: config.headers, body: JSON.stringify({ avatar: avatarLink }) });
+        if (!response.ok) {
+            throw new Error('Ошибка загрузки данных');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+};
 

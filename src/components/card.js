@@ -1,11 +1,3 @@
-export function deleteCard(cardElement) {
-    cardElement.remove();
-}
-
-export function likeCard(cardElement) {
-    cardElement.classList.toggle('card__like-button_is-active');
-}
-
 export function createCard(user ,item, {deleteCard, likeCard, imageClick}) {
     const cardTemplate = document.querySelector('#card-template').content;
     const cardElement = cardTemplate.querySelector('.card').cloneNode(true);
@@ -24,8 +16,14 @@ export function createCard(user ,item, {deleteCard, likeCard, imageClick}) {
     cardImage.alt = item.name;
     cardLikeCount.textContent = item.likes.length;
 
-    cardDeleteButton.addEventListener('click', () => deleteCard(cardElement));
-    cardLike.addEventListener('click', () => likeCard(cardLike));
+    if (item.likes.some(like => like._id === user._id)) {
+        cardLike.classList.add('card__like-button_is-active');
+    } else {
+        cardLike.classList.remove('card__like-button_is-active');
+    }
+
+    cardDeleteButton.addEventListener('click', () => deleteCard(item._id));
+    cardLike.addEventListener('click', () => likeCard(item));
     cardImage.addEventListener('click', () => {
         imageClick(cardImage.src, cardImage.alt);
     });
