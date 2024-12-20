@@ -1,4 +1,4 @@
-export function createCard(user ,item, {deleteCard, likeCard, imageClick}) {
+export function createCard(user, item, { deleteCard, likeCard, imageClick }) {
     const cardTemplate = document.querySelector('#card-template').content;
     const cardElement = cardTemplate.querySelector('.card').cloneNode(true);
     const cardDeleteButton = cardElement.querySelector('.card__delete-button');
@@ -7,9 +7,9 @@ export function createCard(user ,item, {deleteCard, likeCard, imageClick}) {
     const cardLike = cardElement.querySelector('.card__like-button');
     const cardLikeCount = cardElement.querySelector('.card__like-count');
 
-    if(user._id !== item.owner._id){
+    if (user._id !== item.owner._id) {
         cardElement.removeChild(cardDeleteButton);
-    } 
+    }
 
     cardTitle.textContent = item.name;
     cardImage.src = item.link;
