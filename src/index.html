@@ -17,8 +17,12 @@
         </header>
         <main class="content">
             <section class="profile page__section">
-                <div class="profile__image"><span class="edit-icon"><img
-                            src="<%=require('./images/edit-avatar.png')%>"></span></div>
+                <div class="profile__image">
+                    <img src="<%= require('./images/avatar.jpg') %>" class="avatar-image" alt="Avatar">
+                    <span class="edit-icon">
+                        <img src="<%= require('./images/edit-avatar.png') %>" alt="Edit Avatar">
+                    </span>
+                </div>
                 <div class="profile__info">
                     <h1 class="profile__title">Жак-Ив Кусто</h1>
                     <button class="profile__edit-button" type="button"></button>

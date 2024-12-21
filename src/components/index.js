@@ -20,7 +20,7 @@ const editProfileForm = document.forms['edit-profile'];
 const addNewCardForm = document.forms['new-place'];
 const editAvatarButton = document.querySelector('.profile__image');
 const editProfileButton = document.querySelector('.profile__edit-button');
-const currentAvatar = document.querySelector('.profile__image');
+const currentAvatar = document.querySelector('.avatar-image');
 const currentName = document.querySelector('.profile__title');
 const currentDescription = document.querySelector('.profile__description');
 const validationConfig = {
@@ -49,56 +49,77 @@ addNewCardForm.addEventListener('submit', async function (evt) {
     changeButtonTitle(addNewCardForm.querySelector('.button'), "Сохранение...");
     const placeName = document.querySelector('[name="place-name"]').value;
     const link = document.querySelector('[name="link"]').value;
-    await addNewCard(placeName, link);
-    renderData();
-    addNewCardForm.reset();
-    changeButtonTitle(addNewCardForm.querySelector('.button'), "Сохранить");
-    closeAllPopups();
+    try {
+        const newCard = await addNewCard(placeName, link);
+        cardContainer.prepend(createCard(newCard.owner._id, newCard, { deleteCard, likeCard, imageClick }));
+        closeAllPopups();
+        addNewCardForm.reset();
+    } catch (error) {
+        console.error('Ошибка при создании новой карточки:', error);
+    } finally {
+        changeButtonTitle(addNewCardForm.querySelector('.button'), "Сохранить");
+    }
 });
 
 editProfileAvatarForm.addEventListener('submit', async function (evt) {
     evt.preventDefault();
     changeButtonTitle(editProfileAvatarForm.querySelector('.button'), "Сохранение...");
     const link = document.querySelector('[name="avatar-link"]').value;
-    editProfileAvatarForm.reset();
-    await updateProfileAvatar(link);
-    userUpdateData();
-    changeButtonTitle(editProfileAvatarForm.querySelector('.button'), "Сохранить");
-    closeAllPopups();
+    try {
+        const userData = await updateProfileAvatar(link);
+        currentAvatar.src = userData.avatar;
+        closeAllPopups();
+        editProfileAvatarForm.reset();
+    } catch (error) {
+        console.error('Ошибка при загрузке аватара:', error);
+    } finally {
+        changeButtonTitle(editProfileAvatarForm.querySelector('.button'), "Сохранить");
+    }
 });
+
 
 editProfileForm.addEventListener('submit', async function (evt) {
     evt.preventDefault();
     changeButtonTitle(editProfileForm.querySelector('.button'), "Сохранение...");
     const inputName = document.querySelector('[name="name"]');
+    const currentAvatar = document.querySelector('.avatar-image');
     const inputDescription = document.querySelector('[name="description"]');
     let currentName = document.querySelector('.profile__title');
     let currentDescription = document.querySelector('.profile__description');
-    currentName.textContent = inputName.value;
-    currentDescription.textContent = inputDescription.value;
-    await userUpdateData();
-    changeButtonTitle(editProfileForm.querySelector('.button'), "Сохранить");
-    closeAllPopups();
+    try {
+        await updateUserData(inputName.value, currentAvatar.src, inputDescription.value);
+        currentName.textContent = inputName.value;
+        currentDescription.textContent = inputDescription.value;
+        closeAllPopups();
+    } catch (error) {
+        console.error('Ошибка при обновлении данных пользователя:', error);
+    } finally {
+        changeButtonTitle(editProfileForm.querySelector('.button'), "Сохранить");
+    }
 });
 
 editAvatarButton.addEventListener('click', () => {
     openModal(updateAvatarPopup);
+    const openedPopup = document.querySelector('.popup_is-opened');
+    clearValidation(openedPopup, validationConfig);
 });
 
 editProfileButton.addEventListener('click', () => {
     openModal(editProfilePopup);
+    const openedPopup = document.querySelector('.popup_is-opened');
+    clearValidation(openedPopup, validationConfig);
     const inputName = document.querySelector('[name="name"]');
     const inputDescription = document.querySelector('[name="description"]');
     let currentName = document.querySelector('.profile__title').textContent;
     let currentDescription = document.querySelector('.profile__description').textContent;
     inputName.value = currentName;
     inputDescription.value = currentDescription;
-    enableValidation(validationConfig);
 });
 
 addCardButton.addEventListener('click', () => {
     openModal(newCardPopup);
-    enableValidation(validationConfig);
+    const openedPopup = document.querySelector('.popup_is-opened');
+    clearValidation(openedPopup, validationConfig);
 });
 
 function changeButtonTitle(button, text) {
@@ -112,40 +133,53 @@ function imageClick(imageLink, imageCaption) {
     openModal(imagePopap);
 }
 
-function deleteCard(cardId) {
+function deleteCard(cardId, cardElement) {
     openModal(deleteCardPopup);
     const form = document.forms['delete-card'];
     form.onsubmit = async function (evt) {
         evt.preventDefault();
-        changeButtonTitle(form.querySelector('.button'), "Сохранение...");
-        await deleteMyCard(cardId);
-        renderData();
-        changeButtonTitle(form.querySelector('.button'), "Да");
-        closeModal(deleteCardPopup);
+        const submitButton = form.querySelector('.button');
+        changeButtonTitle(submitButton, "Удаление...");
+        try {
+            await deleteMyCard(cardId);
+            cardElement.remove();
+            closeModal(deleteCardPopup);
+        } catch (error) {
+            console.error('Ошибка при удалении карточки:', error);
+        } finally {
+            changeButtonTitle(submitButton, "Да");
+        }
     };
 }
 
-async function likeCard(item) {
-    const userData = await getUserData();
-    if (item.likes.some(like => like._id === userData._id)) {
-        await unSetLike(item._id);
+async function likeCard(item, cardLike, cardLikeCount) {
+    if (cardLike.classList.contains('card__like-button_is-active')) {
+        try {
+            const likeCount = await unSetLike(item._id);
+            cardLike.classList.remove('card__like-button_is-active');
+            cardLikeCount.textContent = likeCount.likes.length;
+        } catch (error) {
+            console.error('Ошибка при снятии лайка:', error);
+        }
     } else {
-        await setLike(item._id);
+        try {
+            const likeCount = await setLike(item._id);   
+            cardLike.classList.add('card__like-button_is-active');
+            cardLikeCount.textContent = likeCount.likes.length;
+        } catch (error) {
+            console.error('Ошибка при установке лайка:', error);
+        }
     }
-    renderData();
 }
 
 function closeAllPopups() {
     const openedPopup = document.querySelector('.popup_is-opened');
     if (openedPopup) {
         closeModal(openedPopup);
-        clearValidation(openedPopup, validationConfig);
     }
 }
 
-async function showCards(user) {
-    const initialCards = await getInitialCards();
-
+async function showCards(user, initialCards) {
     const allCards = cardContainer.querySelectorAll('.places__item');
     if (allCards != null) {
         allCards.forEach(item => {
@@ -154,13 +188,8 @@ async function showCards(user) {
     }
 
     initialCards.forEach(item => {
-        cardContainer.append(createCard(user, item, { deleteCard, likeCard, imageClick }));
+        cardContainer.append(createCard(user._id, item, { deleteCard, likeCard, imageClick }));
     });
-}
-
-async function userUpdateData() {
-    await updateUserData(currentName.textContent, currentAvatar.src, currentDescription.textContent);
-    renderData();
 }
 
 async function renderData() {
@@ -171,7 +200,7 @@ async function renderData() {
         ]);
         currentName.textContent = userData.name;
         currentDescription.textContent = userData.about;
-        currentAvatar.style.backgroundImage = `url("${userData.avatar}")`;
+        currentAvatar.src = userData.avatar;
         showCards(userData, initialCards);
     } catch (error) {
         console.error('Ошибка при загрузке данных:', error);
@@ -179,3 +208,4 @@ async function renderData() {
 }
 
 renderData();
+enableValidation(validationConfig);

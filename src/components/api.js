@@ -15,9 +15,10 @@ export const getInitialCards = async () => {
         return await response.json();
     } catch (error) {
         console.error(error);
-        return [];
+        throw error;
     }
 };
+
 
 export const getUserData = async () => {
     try {
@@ -28,7 +29,7 @@ export const getUserData = async () => {
         return await response.json();
     } catch (error) {
         console.error(error);
-        return [];
+        throw error;
     }
 };
 
@@ -41,7 +42,7 @@ export const updateUserData = async (userName, userAvatar, userDescription) => {
         return await response.json();
     } catch (error) {
         console.error(error);
-        return [];
+        throw error;
     }
 };
 
@@ -54,7 +55,7 @@ export const addNewCard = async (cardName, cardLink) => {
         return await response.json();
     } catch (error) {
         console.error(error);
-        return [];
+        throw error;
     }
 };
 
@@ -67,7 +68,7 @@ export const deleteMyCard = async (cardId) => {
         return await response.json();
     } catch (error) {
         console.error(error);
-        return [];
+        throw error;
     }
 };
 
@@ -80,7 +81,7 @@ export const setLike = async (cardId) => {
         return await response.json();
     } catch (error) {
         console.error(error);
-        return [];
+        throw error;
     }
 };
 
@@ -93,7 +94,7 @@ export const unSetLike = async (cardId) => {
         return await response.json();
     } catch (error) {
         console.error(error);
-        return [];
+        throw error;
     }
 };
 
@@ -106,7 +107,7 @@ export const updateProfileAvatar = async (avatarLink) => {
         return await response.json();
     } catch (error) {
         console.error(error);
-        return [];
+        throw error;
     }
 };
 
